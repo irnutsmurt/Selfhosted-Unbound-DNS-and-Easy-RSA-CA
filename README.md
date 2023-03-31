@@ -1,5 +1,5 @@
 # Selfhosted-Unbound-DNS-and-Easy-RSA-CA
-Automated script for installing Unbound and Easy-RSA. Includes a script for adding and removing DNS entries into unbound, as well as easily creating your own CA. I got tired of all the guides that were like "install this. run this command. configure this option." I'm able to do this, but not everyone can. So I created these 2 scripts that will automate the installation of Unbound, Easy-RSA, and OpenSSL for Ubuntu Server 20.04 and Raspberry Pi OS. 
+Automated script for installing Unbound and Easy-RSA. Includes a script for adding and removing DNS entries into unbound, as well as easily creating your own CA. I got tired of all the guides that were like "install this. run this command. configure this option." I'm able to do this, but not everyone can. So I created these 2 scripts that will automate the installation of Unbound, Easy-RSA, and OpenSSL for Ubuntu Server 20.04 and Raspberry Pi OS. It uses a menu system so that its easy to follow and you get exactly what you need.
 
 place both scripts in the same directory then type
 
