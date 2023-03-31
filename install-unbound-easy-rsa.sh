@@ -101,3 +101,83 @@ function setup_easy_rsa() {
   echo "yes" | ./easyrsa build-ca nopass
 }
 setup_easy_rsa
+
+function install_ca_certificate_guide() {
+  while true; do
+    echo "Choose your operating system:"
+    echo "1. Windows"
+    echo "2. macOS"
+    echo "3. Ubuntu Linux"
+    echo "4. Arch Linux"
+    echo "5. Go back to the main menu"
+    echo "6. Exit the script"
+
+    read -p "Enter the number: " os_choice
+
+    case $os_choice in
+      1)
+        echo "Windows:"
+        echo "1. Copy the 'ca.crt' file to your Windows machine."
+        echo "2. Double-click the 'ca.crt' file."
+        echo "3. Click 'Install Certificate', then select 'Local Machine' and click 'Next'."
+        echo "4. Choose 'Place all certificates in the following store' and click 'Browse'."
+        echo "5. Select 'Trusted Root Certification Authorities' and click 'OK'."
+        echo "6. Click 'Next', then 'Finish', and confirm any prompts."
+        ;;
+      2)
+        echo "macOS:"
+        echo "1. Copy the 'ca.crt' file to your macOS machine."
+        echo "2. Double-click the 'ca.crt' file. This will open the 'Keychain Access' app."
+        echo "3. In the 'Keychain Access' app, select 'System' in the 'Keychains' list."
+        echo "4. Drag the 'ca.crt' file into the 'System' keychain."
+        echo "5. You may be prompted for your admin password. Enter it to confirm the action."
+        ;;
+      3)
+        echo "Ubuntu Linux:"
+        echo "1. Copy the 'ca.crt' file to your Ubuntu machine."
+        echo "2. Open a terminal and navigate to the directory containing the 'ca.crt' file."
+        echo "3. Run the following command:"
+        echo "   sudo cp ca.crt /usr/local/share/ca-certificates/"
+        echo "4. Update the CA store by running:"
+        echo "   sudo update-ca-certificates"
+        ;;
+      4)
+        echo "Arch Linux:"
+        echo "1. Copy the 'ca.crt' file to your Arch Linux machine."
+        echo "2. Open a terminal and navigate to the directory containing the 'ca.crt' file."
+        echo "3. Run the following command:"
+        echo "   sudo cp ca.crt /etc/ca-certificates/trust-source/anchors/"
+        echo "4. Update the CA store by running:"
+        echo "   sudo trust extract-compat"
+        ;;
+      5)
+        main_menu
+        ;;
+      6)
+        exit 0
+        ;;
+      *)
+        echo "Invalid option. Please try again."
+        continue
+        ;;
+    esac
+
+    echo "Press 1 to continue, 2 to choose another OS, or 3 to exit the script."
+    read -p "Enter the number: " action_choice
+    case $action_choice in
+      1)
+        main_menu
+        ;;
+      2)
+        continue
+        ;;
+      3)
+        exit 0
+        ;;
+      *)
+        echo "Invalid option. Please try again."
+        ;;
+    esac
+  done
+}
+
