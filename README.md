@@ -13,5 +13,4 @@ The install script will replace a variable in the add-dns-sign-cert.sh
 
 ```user_domain="your_domain_here"```
 
-But if you don't need to install these, then just run the add-dns-sign-cert.sh and replace the "your_domain_here" with your respective domain.
-
+But if you don't need to install these, then just replace the "your_domain_here" with your respective domain and run the add-dns-sign-cert.sh
