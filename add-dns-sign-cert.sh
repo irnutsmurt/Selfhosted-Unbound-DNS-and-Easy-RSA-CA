@@ -18,8 +18,30 @@ function add_dns_entry() {
   esac
 }
 
+function delete_dns_entry() {
+  dns_entries=($(grep -oP '(?<=local-data: ")[^"]+(?= IN A [0-9.]+")' /etc/unbound/unbound.conf))
+
+  for i in "${!dns_entries[@]}"; do
+    echo "$((i+1)). ${dns_entries[i]}"
+  done
+
+  echo "$((i+2)). Return to main menu"
+
+  read -p "Select the DNS entry to delete (enter the number): " choice
+
+  if [[ $choice -eq $((i+2)) ]]; then
+    main_menu
+  else
+    dns_entry_to_delete="${dns_entries[$((choice-1))]}"
+    sudo sed -i "/$dns_entry_to_delete/d" /etc/unbound/unbound.conf
+    sudo systemctl restart unbound
+    echo "DNS entry deleted successfully."
+    main_menu
+  fi
+}
+
 function create_signed_certificate() {
-  dns_entries=($(grep -oP '(?<=local-data: ")[^"]+(?= A [0-9.]+")' /etc/unbound/unbound.conf))
+  dns_entries=($(grep -oP '(?<=local-data: ")[^"]+(?= IN A [0-9.]+")' /etc/unbound/unbound.conf))
 
   for i in "${!dns_entries[@]}"; do
     echo "$((i+1)). ${dns_entries[i]}"
@@ -95,7 +117,7 @@ function revoke_certificate() {
 }
 
 function generate_signed_cert_and_key() {
-  dns_entries=($(grep -oP '(?<=local-data: ")[^"]+(?= A [0-9.]+")' /etc/unbound/unbound.conf))
+  dns_entries=($(grep -oP '(?<=local-data: ")[^"]+(?= IN A [0-9.]+")' /etc/unbound/unbound.conf))
 
   for i in "${!dns_entries[@]}"; do
     echo "$((i+1)). ${dns_entries[i]}"
@@ -120,11 +142,65 @@ function generate_signed_cert_and_key() {
   fi
 }
 
+function sign_csr() {
+  if [[ ! -d ~/easy-rsa/csr ]]; then
+    mkdir -p ~/easy-rsa/csr
+  fi
+
+  if [[ ! -d ~/easy-rsa/csr/completed ]]; then
+    mkdir -p ~/easy-rsa/csr/completed
+  fi
+
+  csr_files=($(ls ~/easy-rsa/csr | grep '\.csr$'))
+
+  if [[ ${#csr_files[@]} -eq 0 ]]; then
+    echo "No CSR files found in ~/easy-rsa/csr directory."
+    main_menu
+  else
+    echo "Available CSR files:"
+    for i in "${!csr_files[@]}"; do
+      echo "$((i+1)). ${csr_files[i]}"
+    done
+
+    echo "$((i+2)). Return to main menu"
+
+    read -p "Select the CSR file to sign (enter the number): " choice
+
+    if [[ $choice -eq $((i+2)) ]]; then
+      main_menu
+    else
+      csr_file="${csr_files[$((choice-1))]}"
+
+      if [[ -f ~/easy-rsa/csr/"$csr_file" ]]; then
+        # Extract the domain name from the CSR file
+        domain=$(openssl req -in ~/easy-rsa/csr/"$csr_file" -noout -subject | awk -F'=' '{print $NF}' | sed 's/^ *//g')
+
+        cd ~/easy-rsa
+        source vars
+        ./easyrsa import-req csr/"$csr_file" "$domain"
+        ./easyrsa sign-req server "$domain"
+
+        echo "Signed certificate generated successfully: pki/issued/${domain}.crt"
+
+        mv ~/easy-rsa/pki/issued/"$domain".crt ~/easy-rsa/csr/completed/"$domain".crt
+        echo "Signed certificate moved to ~/easy-rsa/csr/completed/${domain}.crt"
+
+        main_menu
+      else
+        echo "CSR file not found. Please ensure the file is in the ~/easy-rsa/csr directory."
+        main_menu
+      fi
+    fi
+  fi
+}
+
 function main_menu() {
   echo "1. Add an Unbound DNS entry"
   echo "2. Create a signed certificate (cert and key or PKCS#12)"
-  echo "3. Revoke a certificate"
-  echo "4. Exit"
+  echo "3. Sign a CSR (make sure CSR is already in ~/easy-rsa/csr folder)"
+  echo "4. Revoke a certificate"
+  echo "5. Delete a DNS entry"
+  echo "6. Exit"
 
   read -p "Choose an option (enter the number): " choice
 
@@ -136,9 +212,15 @@ function main_menu() {
       create_signed_certificate
       ;;
     3)
-      revoke_certificate
+      sign_csr
       ;;
     4)
+      revoke_certificate
+      ;;
+    5)
+      delete_dns_entry
+      ;;
+    6)
       exit 0
       ;;
     *)

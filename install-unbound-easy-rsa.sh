@@ -65,6 +65,7 @@ select_dns_providers
 
 function set_domain_name() {
   read -p "Enter your desired default domain name (e.g., coolguynetwork.com): " domain_name
+  sed -i "s/user_domain=\"your_domain_here\"/user_domain=\"$domain_name\"/g" "$(dirname "$0")/add-dns-sign-cert.sh"
 }
 set_domain_name
 
